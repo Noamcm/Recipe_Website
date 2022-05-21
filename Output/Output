@@ -1,0 +1,106 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Simple Inventory API",
+    "description" : "An recipe website API",
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "https://virtserver.swaggerhub.com/Shiri_Noam/Recipes/1.0.0",
+    "description" : "SwaggerHub API Auto Mocking"
+  }, {
+    "url" : "https://virtserver.swaggerhub.com/Noamcm/Recipes/1.0.0",
+    "description" : "SwaggerHub API Auto Mocking"
+  } ],
+  "tags" : [ {
+    "name" : "admins",
+    "description" : "Secured Admin-only calls"
+  }, {
+    "name" : "developers",
+    "description" : "Operations available to regular developers"
+  } ],
+  "paths" : {
+    "/register" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "a new user from thr client is added to the server",
+        "description" : "a JSON object contains all the details abput the new user.",
+        "requestBody" : {
+          "description" : "Invetory item to add",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/User"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "a new user has been added"
+          },
+          "400" : {
+            "description" : "wrong input parameter"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "User" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "maxLength" : 8,
+            "minLength" : 3,
+            "type" : "string",
+            "description" : "username contains between 3 to 8 letters only",
+            "example" : "mspiggy"
+          },
+          "firstname" : {
+            "type" : "string",
+            "description" : "user's first name",
+            "example" : "johnny"
+          },
+          "lastname" : {
+            "type" : "string",
+            "description" : "user's last name",
+            "example" : "depp"
+          },
+          "country" : {
+            "type" : "string",
+            "description" : "user's country",
+            "example" : "Israel"
+          },
+          "password" : {
+            "maxLength" : 10,
+            "minLength" : 5,
+            "type" : "string",
+            "description" : "password contains between 5 to 10 chars, at least one of them is a number and a special char\n",
+            "format" : "password",
+            "example" : "johnny@10"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "user's email",
+            "format" : "email",
+            "example" : "johnny.depp@gmail.com"
+          },
+          "img-url" : {
+            "type" : "string",
+            "description" : "URL for the user's image",
+            "format" : "url",
+            "example" : "https://cloudinary.com/johhnydepp"
+          }
+        },
+        "description" : "Model containing user info"
+      }
+    }
+  }
+}
