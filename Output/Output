@@ -1,0 +1,680 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "Simple Inventory API",
+    "description" : "An recipe website API",
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "https://virtserver.swaggerhub.com/Shiri_Noam/Recipes/1.0.0",
+    "description" : "SwaggerHub API Auto Mocking"
+  }, {
+    "url" : "https://virtserver.swaggerhub.com/Noamcm/Recipes/1.0.0",
+    "description" : "SwaggerHub API Auto Mocking"
+  } ],
+  "tags" : [ {
+    "name" : "admins",
+    "description" : "Secured Admin-only calls"
+  }, {
+    "name" : "developers",
+    "description" : "Operations available to regular developers"
+  } ],
+  "paths" : {
+    "/register" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "a new user from the client is added to the server",
+        "description" : "a JSON object contains all the details about the new user.",
+        "requestBody" : {
+          "description" : "Invetory item to add",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/User"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "a new user has been added"
+          },
+          "400" : {
+            "description" : "wrong input parameter"
+          }
+        }
+      }
+    },
+    "/login" : {
+      "post" : {
+        "tags" : [ "Auth" ],
+        "summary" : "a user is trying to log-in",
+        "description" : "a JSON object contains username and password about the user.",
+        "requestBody" : {
+          "description" : "check if user exists in database and validate it's password",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/login_body"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "successfully logged in"
+          },
+          "400" : {
+            "description" : "wrong input parameter"
+          }
+        }
+      }
+    },
+    "/recipe" : {
+      "get" : {
+        "tags" : [ "recipe" ],
+        "summary" : "get random 3 recipes for opening page",
+        "description" : "a JSON object contains 3 random recipes.",
+        "responses" : {
+          "200" : {
+            "description" : "Successful pull of 3 random recipes",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "maxItems" : 3,
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Recipe"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "recipe" ],
+        "summary" : "the user wants to create a recipe info",
+        "description" : "a JSON object contains all the details about the recipe.",
+        "requestBody" : {
+          "description" : "Recipe to add to database",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/recipe_body"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "a new recipe has been added"
+          },
+          "400" : {
+            "description" : "wrong input parameter"
+          },
+          "401" : {
+            "description" : "user must be logged-in in order to add a recipe"
+          }
+        }
+      }
+    },
+    "/recipe/{recipe_id}" : {
+      "get" : {
+        "tags" : [ "recipe" ],
+        "summary" : "Get recipe information by id",
+        "parameters" : [ {
+          "name" : "recipe_id",
+          "in" : "path",
+          "description" : "the id of the recipe",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "integer"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful pull of recipe information",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Recipe"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "recipe not found"
+          }
+        }
+      }
+    },
+    "/recipe/search/" : {
+      "get" : {
+        "tags" : [ "recipe" ],
+        "summary" : "Get recipes information by search words",
+        "parameters" : [ {
+          "name" : "param",
+          "in" : "query",
+          "description" : "word to search, filter options and number of recipes",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/param"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful pull of recipe information",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Recipe"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "recipe not found"
+          }
+        }
+      }
+    },
+    "/like" : {
+      "put" : {
+        "tags" : [ "like" ],
+        "summary" : "mark a recipe as like for a user unless its already liked and then unlike it",
+        "description" : "update DB of recipes of the users called \"UserAndrecipe\" for liked or opposite, and also update recipe's popularity (amount of likes)",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/like_body"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "The recipe has been marked as liked"
+          },
+          "400" : {
+            "description" : "wrong input parameter"
+          },
+          "401" : {
+            "description" : "user must be logged-in in order to like a recipe"
+          }
+        }
+      }
+    },
+    "/lastViewed" : {
+      "put" : {
+        "tags" : [ "lastViewed" ],
+        "summary" : "mark a recipe as viewed for a user",
+        "description" : "update DB of recipes of the users called \"UserAndrecipe\" for viewed , and update users first second and third last viewed recipes",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/lastViewed_body"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "The recipe has been marked as viewed"
+          },
+          "400" : {
+            "description" : "wrong input parameter"
+          },
+          "401" : {
+            "description" : "user must be logged-in in order to mark a recipe as viewed"
+          }
+        }
+      }
+    },
+    "/lastViewed/{username}" : {
+      "get" : {
+        "tags" : [ "lastViewed" ],
+        "summary" : "Get last viewed recipes of user",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "description" : "the name of the user",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful pull of 3 last viewed recipes",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "maxItems" : 3,
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Recipe"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "user not found"
+          }
+        }
+      }
+    },
+    "/favorites/{username}" : {
+      "get" : {
+        "tags" : [ "favorites" ],
+        "summary" : "Get favorites recipes of user",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "description" : "the name of the user",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful pull of all favorites recipes",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Recipe"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "user not found"
+          }
+        }
+      }
+    },
+    "/favorites" : {
+      "put" : {
+        "tags" : [ "favorites" ],
+        "summary" : "add favorite recipe to a user",
+        "description" : "update DB of favorites recipes of the users called \"UserAndrecipe\"",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/favorites_body"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "The recipe has been marked as favorite"
+          },
+          "400" : {
+            "description" : "wrong input parameter"
+          },
+          "401" : {
+            "description" : "user must be logged-in in order to favorite a recipe"
+          }
+        }
+      }
+    },
+    "/added/{username}" : {
+      "get" : {
+        "tags" : [ "added" ],
+        "summary" : "Get recipes that was added by the user",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "description" : "the name of the user",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful pull of all recipes that added by the user",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Recipe"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "user not found"
+          }
+        }
+      }
+    },
+    "/family/{username}" : {
+      "get" : {
+        "tags" : [ "family" ],
+        "summary" : "Get user's family recipes",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "description" : "the name of the user",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful pull of all user's family recipes",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Recipe"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "user not found"
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "User" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "maxLength" : 8,
+            "minLength" : 3,
+            "type" : "string",
+            "description" : "username contains between 3 to 8 letters only",
+            "example" : "mspiggy"
+          },
+          "firstname" : {
+            "type" : "string",
+            "description" : "user's first name",
+            "example" : "johnny"
+          },
+          "lastname" : {
+            "type" : "string",
+            "description" : "user's last name",
+            "example" : "depp"
+          },
+          "country" : {
+            "type" : "string",
+            "description" : "user's country",
+            "example" : "Israel"
+          },
+          "password" : {
+            "maxLength" : 10,
+            "minLength" : 5,
+            "type" : "string",
+            "description" : "password contains between 5 to 10 chars, at least one of them is a number and a special char\n",
+            "format" : "password",
+            "example" : "johnny@10"
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "user's email johnny.depp@gmail.com",
+            "format" : "email"
+          },
+          "img-url" : {
+            "type" : "string",
+            "description" : "URL for the user's image",
+            "format" : "url",
+            "example" : "https://cloudinary.com/johhnydepp"
+          },
+          "LastSearch" : {
+            "type" : "string",
+            "example" : "Sushi"
+          },
+          "FirstLastViewedRecipeId" : {
+            "type" : "integer",
+            "example" : 3
+          },
+          "SecondLastViewedRecipeId" : {
+            "type" : "integer",
+            "example" : 6
+          },
+          "ThirdLastViewedRecipeId" : {
+            "type" : "integer",
+            "example" : 1
+          }
+        },
+        "description" : "Model containing user info"
+      },
+      "Recipe" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "picture" : {
+            "type" : "string",
+            "description" : "URL for the recipe's image",
+            "format" : "url"
+          },
+          "preperationTimeMinutes" : {
+            "type" : "integer"
+          },
+          "popularity" : {
+            "type" : "integer",
+            "description" : "number of likes"
+          },
+          "category" : {
+            "type" : "string",
+            "example" : "vegan",
+            "enum" : [ "vegan", "vegetarian", "regular" ]
+          },
+          "hasGluten" : {
+            "type" : "boolean"
+          },
+          "recipeUrl" : {
+            "type" : "string",
+            "description" : "URL for the recipe's",
+            "format" : "url"
+          },
+          "ingredientsAndAmount" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Recipe_ingredientsAndAmount"
+            }
+          },
+          "servings" : {
+            "type" : "integer"
+          },
+          "instructions" : {
+            "type" : "string"
+          },
+          "recipeOwner" : {
+            "type" : "string",
+            "example" : "grandma"
+          },
+          "timePreparedInFamily" : {
+            "type" : "string",
+            "example" : "Shavuot Holiday"
+          }
+        },
+        "description" : "Model containing recipe info"
+      },
+      "usersFamilyRecipe" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "mspiggy"
+          },
+          "recipeId" : {
+            "type" : "integer",
+            "example" : 3
+          }
+        },
+        "description" : "Model containing user's family recipes"
+      },
+      "recipeUserAdded" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "mspiggy"
+          },
+          "recipeId" : {
+            "type" : "integer",
+            "example" : 3
+          }
+        },
+        "description" : "Model containing recipes that the user added"
+      },
+      "UserAndrecipe" : {
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "mspiggy"
+          },
+          "recipeId" : {
+            "type" : "integer",
+            "example" : 3
+          },
+          "HasWatched" : {
+            "type" : "boolean",
+            "example" : true
+          },
+          "HasSaved" : {
+            "type" : "boolean",
+            "example" : false
+          },
+          "HasLiked" : {
+            "type" : "boolean",
+            "example" : true
+          }
+        },
+        "description" : "Model containing data about recipes for each user"
+      },
+      "login_body" : {
+        "required" : [ "password", "username" ],
+        "type" : "object",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "johndoe17"
+          },
+          "password" : {
+            "type" : "string",
+            "example" : "password"
+          }
+        },
+        "description" : "Model containing user info for login request"
+      },
+      "recipe_body" : {
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "johndoe17"
+          },
+          "recipe" : {
+            "$ref" : "#/components/schemas/Recipe"
+          }
+        }
+      },
+      "param" : {
+        "type" : "array",
+        "items" : {
+          "$ref" : "#/components/schemas/param"
+        }
+      },
+      "like_body" : {
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "johndoe17"
+          },
+          "recipeId" : {
+            "type" : "integer",
+            "example" : 7
+          }
+        }
+      },
+      "lastViewed_body" : {
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "johndoe17"
+          },
+          "recipeId" : {
+            "type" : "integer",
+            "example" : 7
+          }
+        }
+      },
+      "favorites_body" : {
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "example" : "johndoe17"
+          },
+          "recipeId" : {
+            "type" : "integer",
+            "example" : 7
+          }
+        }
+      },
+      "Recipe_ingredientsAndAmount" : {
+        "type" : "object",
+        "properties" : {
+          "ingredientName" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "integer"
+          }
+        },
+        "example" : null
+      }
+    }
+  }
+}
