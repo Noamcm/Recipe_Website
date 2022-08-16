@@ -1,4 +1,4 @@
-API link - https://app.swaggerhub.com/apis-docs/Noamcm/Recipes_API/1.0.0
+API link - https://app.swaggerhub.com/apis-docs/Shiri_Noam/Recipes/1.0.0
 
 our ids : 207777525, 318267895
 
