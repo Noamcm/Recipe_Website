@@ -1,0 +1,752 @@
+---
+openapi: 3.0.0
+info:
+  title: RecipesBySN
+  description: A recipe website API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/Shiri_Noam/Recipes/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: https://virtserver.swaggerhub.com/Noamcm/Recipes/1.0.0
+  description: SwaggerHub API Auto Mocking
+paths:
+  /Register:
+    post:
+      tags:
+      - auth
+      summary: a new user is added to the server
+      description: a JSON object contains all the details about the new user.
+      requestBody:
+        description: User to add as registered, so can log in
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register_body'
+        required: true
+      responses:
+        "201":
+          description: The user has created
+        "400":
+          description: Missing parameters
+        "409":
+          description: Username taken
+  /Login:
+    post:
+      tags:
+      - auth
+      summary: a user is trying to log-in
+      description: a JSON object contains username and password about the user.
+      requestBody:
+        description: check if user exists in database and validate it's password
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login_body'
+        required: true
+      responses:
+        "201":
+          description: Login Succeeded
+        "400":
+          description: Missing Username or Password
+        "401":
+          description: Username or Password incorrect
+  /Logout:
+    post:
+      tags:
+      - auth
+      summary: a user is trying to log-out
+      description: a JSON object contains username and password about the user.
+      responses:
+        "200":
+          description: Logout Succeeded
+        "401":
+          description: You must Log-In before you can Log-Out
+  /recipes/random:
+    get:
+      tags:
+      - recipes
+      summary: get random 3 recipes for opening page
+      description: a JSON object contains 3 random recipes.
+      responses:
+        "200":
+          description: Successful pull of 3 random recipes
+          content:
+            application/json:
+              schema:
+                maxItems: 3
+                minItems: 3
+                type: array
+                items:
+                  $ref: '#/components/schemas/inline_response_200'
+  /recipes/{recipe_id}:
+    get:
+      tags:
+      - recipes
+      summary: Get recipe information by id
+      description: a JSON object contains all the details about the recipe.
+      parameters:
+      - name: recipe_id
+        in: path
+        description: the id of the recipe
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          example: 4
+      responses:
+        "200":
+          description: Successful pull of recipe information
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/inline_response_200_1'
+        "500":
+          description: A recipe with the id does not exist.
+  /recipes/search/:
+    get:
+      tags:
+      - recipes
+      summary: Get last search for the user by user_id
+      description: returns a JSON object user's last search info.
+      responses:
+        "200":
+          description: Successful pull of array of recipes information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "401":
+          description: Only logged-in users can see their last searched recipe
+    put:
+      tags:
+      - recipes
+      summary: Get recipes information by search parameters and save last search by user_id if exists
+      description: returns a JSON object contains array of recipes that matches the search.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/recipes_search_body'
+        required: false
+      responses:
+        "200":
+          description: Successful pull of array of recipes information
+          content:
+            application/json:
+              schema:
+                maxItems: 15
+                minItems: 5
+                type: array
+                description: it is possible to get less results
+                items:
+                  $ref: '#/components/schemas/inline_response_200_2'
+  /users/watched:
+    description: needs to be logged-in for this
+    get:
+      tags:
+      - user
+      summary: Get last viewed recipes of user
+      description: a JSON object contains array of recipes that the user viewed.
+      responses:
+        "200":
+          description: Successful pull of 3 last viewed recipes
+          content:
+            application/json:
+              schema:
+                maxItems: 3
+                minItems: 0
+                type: array
+                items:
+                  $ref: '#/components/schemas/inline_response_200'
+        "401":
+          description: Only logged-in users can see their watched recipes
+    post:
+      tags:
+      - user
+      summary: mark a recipe as viewed for a user
+      description: update DB that recipe has viewed by user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_watched_body'
+        required: true
+      responses:
+        "201":
+          description: The Recipe successfully saved as watched
+        "400":
+          description: Wrong Recipe Id
+        "401":
+          description: Only logged-in users can mark recipes as watched
+  /users/favorites:
+    get:
+      tags:
+      - user
+      summary: Get favorites recipes of user
+      description: a JSON object contains array of recipes that the user favorited.
+      responses:
+        "200":
+          description: Successful pull of all favorites recipes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "401":
+          description: Only logged-in users can see their favorite recipes
+    post:
+      tags:
+      - user
+      summary: add favorite recipe to a user
+      description: update DB of favorites recipes of the users called "UserAndrecipe"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_favorites_body'
+        required: true
+      responses:
+        "201":
+          description: The Recipe successfully saved as favorite
+        "400":
+          description: Wrong Recipe Id
+        "401":
+          description: Only logged-in users can favorite a recipe
+  /users/family:
+    get:
+      tags:
+      - user
+      summary: Get user's family recipes
+      description: a JSON object contains array of recipes that the user added.
+      responses:
+        "200":
+          description: Successful pull of all user's family recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/inline_response_200_3'
+        "401":
+          description: Only logged-in users can see their family recipes
+    post:
+      tags:
+      - user
+      summary: Save user's family recipes
+      description: a JSON object contains a recipe that the user wants to add.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_family_body'
+        required: true
+      responses:
+        "201":
+          description: Successful pull of all user's family recipes
+        "400":
+          description: Wrong Input Parameter OR Missing Parameters OR Recipe must include ingredients
+        "401":
+          description: Only logged-in users can add family recipes
+  /users/added:
+    get:
+      tags:
+      - user
+      summary: Get recipes that was added by the user
+      description: a JSON object contains array of recipes that the user added.
+      responses:
+        "200":
+          description: Successful pull of all recipes that added by the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/inline_response_200_3'
+        "401":
+          description: Only logged-in users can see their recipes
+    post:
+      tags:
+      - user
+      summary: the user wants to add a new recipe
+      description: a JSON object contains all the details about the recipe.
+      requestBody:
+        description: Recipe to add to database
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users_added_body'
+        required: true
+      responses:
+        "201":
+          description: The Recipe successfully saved
+        "400":
+          description: Wrong Recipe Id OR Recipe must include ingredients
+        "401":
+          description: Only logged-in users can add recipes OR Wrong Input Parameter
+components:
+  schemas:
+    Users:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: automated id selected by db, identifies the user
+          example: 18
+        username:
+          maxLength: 8
+          minLength: 3
+          type: string
+          description: username contains between 3 to 8 letters only
+          example: mspiggy
+        firstname:
+          type: string
+          description: user's first name
+          example: johnny
+        lastname:
+          type: string
+          description: user's last name
+          example: depp
+        country:
+          type: string
+          description: user's country
+          example: Israel
+        password:
+          maxLength: 10
+          minLength: 5
+          type: string
+          description: password contains between 5 to 10 chars, at least one of them is a number and a special char
+          format: password
+          example: johnny@10
+        email:
+          type: string
+          description: user's email
+          format: email
+          example: johnny.depp@gmail.com
+        imgurl:
+          type: string
+          description: URL for the user's image
+          format: url
+          example: https://cloudinary.com/johhnydepp
+      description: Model containing user info
+    Recipe:
+      type: object
+      properties:
+        recipe_id:
+          type: integer
+          example: 8
+        recipename:
+          type: string
+          example: cheese cake
+        picture:
+          type: string
+          description: URL for the recipe's image
+          format: url
+          example: https://photos.com/cheesecake
+        preperationTimeMinutes:
+          type: integer
+          example: 120
+        aggregateLikes:
+          type: integer
+          description: number of likes
+          example: 10
+        isGlutenFree:
+          type: boolean
+          example: true
+        isVegan:
+          type: boolean
+          example: true
+        isVegetarian:
+          type: boolean
+          example: true
+        servings:
+          type: integer
+          example: 10
+        instructions:
+          type: string
+          example: mix all together and put in the oven
+        recipeOwner:
+          type: string
+          example: grandma
+        timePreparedInFamily:
+          type: string
+          example: Shavuot Holiday
+        user_id:
+          type: integer
+          description: identifies the user that created the recipe
+          example: 18
+        isFamilyRecipe:
+          type: boolean
+          description: determines if the recipe is a family recipe or just a normal recipe that was added by the user
+          example: true
+      description: Model containing recipe info
+    RecipeIngredients:
+      type: object
+      properties:
+        recipe_id:
+          type: integer
+          example: 8
+        ingredientName:
+          type: string
+          example: cheese
+        measuringTool:
+          type: string
+          example: cups
+        amount:
+          type: number
+          example: 2.5
+      description: Model containing data about ingredients of recipes and their amount
+    FavoriteRecipes:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 11
+        recipe_id:
+          type: integer
+          example: 8
+      description: Model containing data about favorite recipes for each user
+    WatchedRecipes:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 11
+        recipe_id:
+          type: integer
+          example: 8
+        watched_date:
+          pattern: date-time
+          type: string
+          description: The last date that the user watched the recipe
+      description: Model containing data about watched recipes for each user
+    SearchRecipesByUsers:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 18
+        query:
+          type: string
+          example: Pasta
+        cuisine:
+          type: string
+          example: Italian
+        diet:
+          type: string
+          example: Gluten
+        intolerances:
+          type: string
+          example: Dairy
+        number:
+          type: integer
+          description: can be 5/10/15, the default if not written is 5
+          example: 10
+      description: Model containing data about search history of recipes for each user
+    Register_body:
+      required:
+      - country
+      - email
+      - firstname
+      - lastname
+      - password
+      - profilePic
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          example: johndoe17
+        firstname:
+          type: string
+          example: john
+        lastname:
+          type: string
+          example: doe
+        country:
+          type: string
+          example: Israel
+        password:
+          type: string
+          example: password123
+        email:
+          type: string
+          example: johndoe@gmail.com
+        profilePic:
+          type: string
+          example: https://johndoe.com/photo
+      description: Model containing user info for register request
+    Login_body:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+          example: johndoe17
+        password:
+          type: string
+          example: password123
+      description: Model containing user info for login request
+    inline_response_200:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 15
+        title:
+          type: string
+          example: Cheese Cake
+        readyInMinutes:
+          type: integer
+          example: 75
+        image:
+          type: string
+          example: https://cheesecake.com/photo
+        aggregateLikes:
+          type: integer
+          example: 88
+        vegan:
+          type: boolean
+          example: false
+        vegetarian:
+          type: boolean
+          example: true
+        glutenFree:
+          type: boolean
+          example: true
+        hasWatched:
+          type: boolean
+          example: false
+        hasFavorited:
+          type: boolean
+          example: false
+    inline_response_200_1:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 15
+        title:
+          type: string
+          example: Cheese Cake
+        readyInMinutes:
+          type: integer
+          example: 75
+        image:
+          type: string
+          example: https://cheesecake.com/photo
+        aggregateLikes:
+          type: integer
+          example: 88
+        vegan:
+          type: boolean
+          example: false
+        vegetarian:
+          type: boolean
+          example: true
+        glutenFree:
+          type: boolean
+          example: true
+        hasWatched:
+          type: boolean
+          example: false
+        hasFavorited:
+          type: boolean
+          example: false
+        servings:
+          type: integer
+          example: 50
+        extendedIngredients:
+          type: object
+        instructions:
+          type: object
+        analyzedInstructions:
+          type: string
+    recipes_search_body:
+      type: object
+      properties:
+        query:
+          type: string
+          example: Pasta
+        cuisine:
+          type: string
+          example: Italian
+        diet:
+          type: string
+          example: Gluten
+        intolerances:
+          type: string
+          example: Dairy
+        number:
+          type: integer
+          description: can be 5/10/15, the default if not written is 5
+          example: 10
+      description: searches recipes by query and given terms, and saves last user's search in db
+    inline_response_200_2:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 15
+        title:
+          type: string
+          example: Cheese Cake
+        readyInMinutes:
+          type: integer
+          example: 75
+        image:
+          type: string
+          example: https://cheesecake.com/photo
+        aggregateLikes:
+          type: integer
+          example: 88
+        vegan:
+          type: boolean
+          example: false
+        vegetarian:
+          type: boolean
+          example: true
+        glutenFree:
+          type: boolean
+          example: true
+        hasWatched:
+          type: boolean
+          example: false
+        hasFavorited:
+          example: false
+    users_watched_body:
+      properties:
+        recipe_id:
+          type: integer
+          example: 7
+    users_favorites_body:
+      properties:
+        recipe_id:
+          type: integer
+          example: 7
+    inline_response_200_3:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 15
+        title:
+          type: string
+          example: Cheese Cake
+        image:
+          type: string
+          example: https://cheesecake.com/photo
+        readyInMinutes:
+          type: integer
+          example: 75
+        aggregateLikes:
+          type: integer
+          example: 88
+        glutenFree:
+          type: boolean
+          example: true
+        vegan:
+          type: boolean
+          example: false
+        vegetarian:
+          type: boolean
+          example: true
+        servings:
+          type: integer
+          example: 2
+        recipeOwner:
+          type: string
+          example: grandma
+        timePreparedInFamily:
+          type: string
+          example: Shavuot
+    usersfamily_ingredients:
+      type: object
+      properties:
+        ingredientName:
+          type: string
+          example: cheese
+        measuringTool:
+          type: string
+          example: cups
+        amount:
+          type: number
+          example: 2.5
+    users_family_body:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Cheese Cake
+        readyInMinutes:
+          type: integer
+          example: 75
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/usersfamily_ingredients'
+        image:
+          type: string
+          example: https://cheesecake.com/photo
+        vegan:
+          type: boolean
+          example: false
+        vegetarian:
+          type: boolean
+          example: true
+        glutenFree:
+          type: boolean
+          example: true
+        servings:
+          type: integer
+          example: 10
+        instructions:
+          type: array
+          items:
+            type: string
+            example: mix the cheese with sugar
+        recipeOwner:
+          type: string
+          example: grandma
+        timePreparedInFamily:
+          type: string
+          example: Shavuot
+    users_added_body:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Cheese Cake
+        readyInMinutes:
+          type: integer
+          example: 75
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/usersfamily_ingredients'
+        image:
+          type: string
+          example: https://cheesecake.com/photo
+        vegan:
+          type: boolean
+          example: false
+        vegetarian:
+          type: boolean
+          example: true
+        glutenFree:
+          type: boolean
+          example: true
+        servings:
+          type: integer
+          example: 10
+        instructions:
+          type: array
+          items:
+            type: string
+            example: mix the cheese with sugar
